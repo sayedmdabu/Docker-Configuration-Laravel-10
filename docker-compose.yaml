@@ -62,7 +62,7 @@ services:
 
   # phpMyAdmin (optional)
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:fpm-alpine
+    image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     restart: unless-stopped
     environment:
