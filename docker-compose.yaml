@@ -1,0 +1,82 @@
+version: "3.7"
+
+#Networks
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  # PHP application
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: habib/php
+    container_name: laraapp
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8101:80"  # Adjust port if needed
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./base:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  # MySQL database
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    environment:
+      MYSQL_DATABASE: laraapp
+      MYSQL_USER: laraapp
+      MYSQL_PASSWORD: 12345678
+      MYSQL_ROOT_PASSWORD: 12345678  # For initial setup
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+
+  # Nginx web server
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./base:/var/www
+      - ./nginx/conf:/etc/nginx/conf.d
+    ports:
+      - "8102:80"  # Adjust port if needed
+    networks:
+      - app-network
+
+  # phpMyAdmin (optional)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:fpm-alpine
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: laraapp
+      PMA_PASSWORD: 12345678
+    ports:
+      - "8103:80"  # Adjust port if needed
+    networks:
+      - app-network
+
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
