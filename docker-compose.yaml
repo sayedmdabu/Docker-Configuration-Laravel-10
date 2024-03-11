@@ -77,16 +77,21 @@ services:
 
 
   redis:
-    image: redis:6.2.1-buster
+    image: redis:7.2.4-alpine
     container_name: redis
     restart: unless-stopped
     tty: true
     volumes:
-      - ./redis/data:/data
+      - ./redis/data:/usr/local/etc/redis/redis.conf
+      - redisdata:/data
+    ports:
+      - "8104:6379"
     networks:
       - app-network
 
 #Volumes
 volumes:
   dbdata:
+    driver: local
+  redisdata:
     driver: local
